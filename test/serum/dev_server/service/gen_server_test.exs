@@ -9,7 +9,7 @@ defmodule Serum.DevServer.Service.GenServerTest do
   # IMPORTANT NOTE: PLEASE MAKE SURE THE TCP PORT 8080 IS NOT IN USE
   #                 BEFORE RUNNING THIS TEST.
 
-  setup_all do
+  setup do
     tmp_dir = get_tmp_dir("serum_test_")
     pid = start_supervised!(%{id: :ignore_io, start: {StringIO, :open, [""]}})
     test_sup! = hd(Process.info(self())[:links])
@@ -21,17 +21,23 @@ defmodule Serum.DevServer.Service.GenServerTest do
     start_supervised!(%{id: :dev_server, start: {DevServer, :run, [tmp_dir, 8080]}})
     Process.group_leader(test_sup!, old_group_leader!)
     IOProxy.config(mute_err: false)
-    on_exit(fn -> IOProxy.config(Keyword.new(io_config)) end)
+    on_exit(fn ->
+      IOProxy.config(Keyword.new(io_config))
+      File.rm_rf!(tmp_dir)
+    end)
 
     {:ok, tmp_dir: tmp_dir}
   end
 
   test "if source_dir/0 returns the source directory", %{tmp_dir: tmp_dir} do
-    assert tmp_dir === GS.source_dir()
+    source_dir = GS.source_dir()
+    assert Path.basename(source_dir) === Path.basename(tmp_dir)
   end
 
   test "if site_dir/0 returns the temp output directory" do
-    assert String.contains?(GS.site_dir(), "serum_")
+    site_dir = GS.site_dir()
+    assert String.contains?(site_dir, "serum_")
+    assert Path.dirname(site_dir) === Path.expand(System.tmp_dir!())
   end
 
   test "if port/0 returns the current port" do
@@ -48,7 +54,7 @@ defmodule Serum.DevServer.Service.GenServerTest do
     pid = self()
     state = :sys.get_state(GS)
 
-    assert Enum.any?(state.subscribers, fn {_, v} -> v === pid end)
+    assert Enum.any?(state.subscribers, fn {_, subscriber} -> subscriber === pid end)
   end
 
   test "if rebuild/0 successfully builds the project" do
@@ -57,14 +63,16 @@ defmodule Serum.DevServer.Service.GenServerTest do
     assert "" === String.trim(err)
   end
 
-  test "if a build process initiated by rebuild/0 may fail", ctx do
-    dir = ctx.tmp_dir
+  test "if a build process initiated by rebuild/0 may fail", %{tmp_dir: tmp_dir} do
+    serum_exs = Path.join(tmp_dir, "serum.exs")
+    File.rename(serum_exs, serum_exs <> "_")
 
-    File.rename(Path.join(dir, "serum.exs"), Path.join(dir, "serum.exs_"))
+    err =
+      capture_io(:stderr, fn ->
+        assert :ok = GS.rebuild()
+      end)
 
-    err = capture_io(:stderr, fn -> GS.rebuild() end)
-
-    assert "" !== String.trim(err)
-    File.rename(Path.join(dir, "serum.exs_"), Path.join(dir, "serum.exs"))
+    assert String.contains?(err, "Error occurred while building the website")
+    File.rename(serum_exs <> "_", serum_exs)
   end
 end

@@ -11,8 +11,9 @@ defmodule Serum.TestHelper do
 
   def get_tmp_dir(prefix) do
     uniq = Base.url_encode64(:crypto.strong_rand_bytes(6))
-
-    Path.expand(prefix <> uniq, System.tmp_dir!())
+    path = Path.join(System.tmp_dir!(), prefix <> uniq)
+    File.mkdir_p!(path)
+    path
   end
 
   def make_project(target) do

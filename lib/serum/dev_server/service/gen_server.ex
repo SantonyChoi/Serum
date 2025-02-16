@@ -33,7 +33,10 @@ defmodule Serum.DevServer.Service.GenServer do
 
   @impl Service
   @spec source_dir() :: binary
-  def source_dir, do: GenServer.call(__MODULE__, :source_dir)
+  def source_dir do
+    GenServer.call(__MODULE__, :source_dir)
+    |> Path.expand()
+  end
 
   @impl Service
   @spec site_dir() :: binary

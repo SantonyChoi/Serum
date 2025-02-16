@@ -5,14 +5,12 @@ defmodule Serum.FileTest do
 
   @content1 "The quick brown fox jumps over the lazy dog.\n"
 
-  setup_all do
+  setup do
     tmp_dir = get_tmp_dir("serum_test_")
+    file_path = Path.join(tmp_dir, "file1")
 
     File.mkdir_p!(tmp_dir)
-
-    File.open!(Path.join(tmp_dir, "file1"), [:write, :utf8], fn pid ->
-      IO.write(pid, @content1)
-    end)
+    File.write!(file_path, @content1)
 
     on_exit(fn ->
       File.rm_rf!(tmp_dir)

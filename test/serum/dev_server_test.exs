@@ -11,6 +11,7 @@ defmodule Serum.DevServerTest do
     pid = start_supervised!(%{id: :ignore_io, start: {StringIO, :open, [""]}})
 
     make_project(tmp_dir)
+    File.mkdir_p!(tmp_dir)
 
     {:ok, tmp_dir: tmp_dir, ignore_io: pid}
   end
@@ -18,6 +19,7 @@ defmodule Serum.DevServerTest do
   describe "run/2" do
     test "successfully starts the server", ctx do
       Process.group_leader(self(), ctx.ignore_io)
+      make_project(ctx.tmp_dir)
 
       assert {:ok, pid} = DevServer.run(ctx.tmp_dir, 8080)
 
@@ -28,18 +30,21 @@ defmodule Serum.DevServerTest do
       dir = ctx.tmp_dir
 
       Process.group_leader(self(), ctx.ignore_io)
+      make_project(dir)
       File.rename(Path.join(dir, "serum.exs"), Path.join(dir, "serum.exs_"))
-      assert {:error, {:enoent, _, 0}} = DevServer.run(dir, 8080)
+      assert {:error, {:enoent, path, 0}} = DevServer.run(dir, 8080)
+      assert String.ends_with?(path, "serum.exs")
       File.rename(Path.join(dir, "serum.exs_"), Path.join(dir, "serum.exs"))
     end
 
     test "fails to start the server due to EADDRINUSE", ctx do
       Process.flag(:trap_exit, true)
       Process.group_leader(self(), ctx.ignore_io)
+      make_project(ctx.tmp_dir)
 
       {:ok, sock} = :gen_tcp.listen(8080, [])
       assert {:error, msg} = DevServer.run(ctx.tmp_dir, 8080)
-      assert String.contains?(msg, "8080")
+      assert msg == "Port 8080 is already in use"
       :ok = :gen_tcp.close(sock)
     end
   end

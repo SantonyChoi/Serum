@@ -15,12 +15,16 @@ defmodule Serum.Build.PageGenerator do
   def run(fragments) do
     put_msg(:info, "Generating complete HTML pages...")
 
-    template = TS.get("base", :template)
+    case TS.get("base", :template) do
+      nil ->
+        {:error, "Base template not found"}
 
-    fragments
-    |> Task.async_stream(&render(&1, template))
-    |> Enum.map(&elem(&1, 1))
-    |> Result.aggregate_values(:page_generator)
+      template ->
+        fragments
+        |> Task.async_stream(&render(&1, template))
+        |> Enum.map(&elem(&1, 1))
+        |> Result.aggregate_values(:page_generator)
+    end
   end
 
   @spec render(Fragment.t(), Template.t()) :: Result.t(Serum.File.t())

@@ -24,12 +24,11 @@ defmodule Serum.DevServer do
          {:ok, pid} when is_pid(pid) <- do_run(dir, site, port, proj) do
       {:ok, pid}
     else
-      {:error, {:shutdown, {:failed_to_start_child, _, :eaddrinuse}}} ->
-        msg =
-          "could not start the Serum development server. " <>
-            "Make sure the port #{port} is not used by other applications"
+      {:error, {:enoent, path, _}} ->
+        {:error, {:enoent, path, 0}}
 
-        {:error, msg}
+      {:error, {:shutdown, {:failed_to_start_child, _, :eaddrinuse}}} ->
+        {:error, "Port #{port} is already in use"}
 
       {:error, {:shutdown, reason}} when not is_list(reason) ->
         msg = "could not start the Serum development server: #{inspect(reason)}"

@@ -196,10 +196,10 @@ defmodule Serum.ThemeTest do
       tmp_path = get_tmp_dir("serum_test_")
       {:ok, agent} = Agent.start_link(fn -> tmp_path end, name: Serum.TestAgent)
       {:ok, _theme} = load(Serum.WeirdTheme)
-      expected = {:error, {:enotdir, tmp_path, 0}}
 
+      File.rm_rf!(tmp_path)
       File.touch!(tmp_path)
-      assert expected === get_assets()
+      assert {:error, {:enotdir, tmp_path, 0}} === get_assets()
       File.rm_rf!(tmp_path)
 
       :ok = Agent.stop(agent)
