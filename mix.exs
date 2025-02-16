@@ -7,7 +7,7 @@ defmodule Serum.Mixfile do
     [
       app: :serum,
       version: @serum_version,
-      elixir: ">= 1.16.0",
+      elixir: "~> 1.18",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
@@ -39,12 +39,12 @@ defmodule Serum.Mixfile do
       {:microscope, ">= 1.4.0"},
       {:timex, "~> 3.7"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:excoveralls, "~> 0.14", only: [:test], runtime: false},
-      {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:floki, "0.36.1"},
+      {:excoveralls, "~> 0.16", only: [:test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:floki, "~> 0.36.1"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
-      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
-      {:mox, "~> 1.0", only: :test}
+      {:mix_test_watch, "~> 1.1", only: :dev, runtime: false},
+      {:mox, "~> 1.1", only: :test}
     ]
   end
 
