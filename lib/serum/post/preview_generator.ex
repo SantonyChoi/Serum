@@ -9,7 +9,8 @@ defmodule Serum.Post.PreviewGenerator do
   def generate_preview(html, length, excerpt \\ nil)
 
   # If excerpt is provided, use it
-  def generate_preview(_html, _length, excerpt) when is_binary(excerpt) and excerpt != "", do: excerpt
+  def generate_preview(_html, _length, excerpt) when is_binary(excerpt) and excerpt != "",
+    do: excerpt
 
   # If more tag exists, use content before it
   def generate_preview(html, length, _excerpt) do

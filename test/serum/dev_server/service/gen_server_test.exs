@@ -21,6 +21,7 @@ defmodule Serum.DevServer.Service.GenServerTest do
     start_supervised!(%{id: :dev_server, start: {DevServer, :run, [tmp_dir, 8080]}})
     Process.group_leader(test_sup!, old_group_leader!)
     IOProxy.config(mute_err: false)
+
     on_exit(fn ->
       IOProxy.config(Keyword.new(io_config))
       File.rm_rf!(tmp_dir)
