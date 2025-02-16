@@ -65,9 +65,16 @@ defmodule Mix.Tasks.Serum.Gen.Post do
       ---
       title: #{options[:title]}
       date: #{Timex.format!(now, "{YYYY}-{0M}-{0D} {h24}:{m}:{s}")}
-      #{tags}---
+      #{tags}
+      excerpt: Write a brief excerpt for your post here (optional)
+      ---
 
-      TODO: Put some contents here!
+      Write your post content here.
+      Use <!--more--> tag to indicate where the preview should end.
+
+      <!--more-->
+
+      The rest of your content goes here.
       """
     )
   end

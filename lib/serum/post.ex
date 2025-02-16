@@ -13,6 +13,7 @@ defmodule Serum.Post do
   * `canonical_url`: Custom canonical URL of the blog post
   * `html`: Post contents converted into HTML
   * `preview`: Preview text of the post
+  * `excerpt`: Excerpt text of the post
   * `output`: Destination path
   """
 
@@ -35,6 +36,7 @@ defmodule Serum.Post do
           canonical_url: binary(),
           html: binary(),
           preview: binary(),
+          excerpt: binary() | nil,
           output: binary(),
           extras: map(),
           template: binary() | nil
@@ -50,6 +52,7 @@ defmodule Serum.Post do
     :canonical_url,
     :html,
     :preview,
+    :excerpt,
     :output,
     :extras,
     :template
@@ -61,7 +64,7 @@ defmodule Serum.Post do
     datetime = header[:date]
     date_str = Timex.format!(datetime, proj.date_format)
     raw_date = to_erl_datetime(datetime)
-    preview = PreviewGenerator.generate_preview(html, proj.preview_length)
+    preview = PreviewGenerator.generate_preview(html, proj.preview_length, header[:excerpt])
     {url, output} = path |> Path.basename(".md") |> url_and_output(proj)
 
     %__MODULE__{
@@ -70,6 +73,7 @@ defmodule Serum.Post do
       tags: tags,
       html: html,
       preview: preview,
+      excerpt: header[:excerpt],
       raw_date: raw_date,
       date: date_str,
       url: url,
